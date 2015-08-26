@@ -54,7 +54,7 @@ object frmMain: TfrmMain
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 3
       ReadOnly = True
-      Text = 'C:\Users\Vladimir\Downloads'
+      Text = 'c:\users\vladimir\downloads'
       Position.X = 112.000000000000000000
       Position.Y = 40.000000000000000000
       Size.Width = 473.000000000000000000
@@ -79,7 +79,7 @@ object frmMain: TfrmMain
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 1
       ReadOnly = True
-      Text = 'G:\Radio'
+      Text = 'g:\radio'
       Position.X = 112.000000000000000000
       Position.Y = 72.000000000000000000
       Size.Width = 473.000000000000000000
@@ -91,7 +91,7 @@ object frmMain: TfrmMain
     object edtSizeMB: TEdit
       Touch.InteractiveGestures = [LongTap, DoubleTap]
       TabOrder = 4
-      Text = '1'
+      Text = '0,7'
       Position.X = 112.000000000000000000
       Position.Y = 109.000000000000000000
       Size.Width = 57.000000000000000000
@@ -120,7 +120,7 @@ object frmMain: TfrmMain
       TextSettings.WordWrap = False
       Text = 'Size MB:'
     end
-    object Button1: TButton
+    object btnDestDirOpen: TButton
       Anchors = [akTop, akRight]
       Position.X = 584.000000000000000000
       Position.Y = 72.000000000000000000
@@ -129,7 +129,7 @@ object frmMain: TfrmMain
       Size.PlatformDefault = False
       TabOrder = 2
       Text = '...'
-      OnClick = Button1Click
+      OnClick = btnDestDirOpenClick
     end
   end
   object dlgOpenDialog: TOpenDialog
