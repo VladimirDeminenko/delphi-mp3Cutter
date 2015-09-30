@@ -5,7 +5,7 @@ interface
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs,
-  FMX.Controls.Presentation, FMX.Edit, FMX.StdCtrls;
+  FMX.Controls.Presentation, FMX.Edit, FMX.StdCtrls, FMX.ListBox;
 type
   TfrmMain = class(TForm)
     dlgOpenDialog: TOpenDialog;
@@ -16,20 +16,19 @@ type
     edtFileName: TEdit;
     btnStart: TButton;
     btnOpen: TButton;
-    edtDestDirName: TEdit;
     edtSizeMB: TEdit;
     lblDirNameTo: TLabel;
     lblSizeMB: TLabel;
-    btnDestDirOpen: TButton;
+    cbxDestList: TComboBox;
     procedure btnCloseClick(Sender: TObject);
     procedure btnOpenClick(Sender: TObject);
     procedure edtFileNameChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnStartClick(Sender: TObject);
-    procedure btnDestDirOpenClick(Sender: TObject);
   private
     function GetDestDirName: string;
     function GetFileName: string;
+    procedure InitDestList(AList: TStrings);
   protected
     procedure CheckState; virtual;
     procedure Start; virtual;
@@ -45,7 +44,7 @@ implementation
 {$R *.fmx}
 
 uses
-  Math, Vcl.FileCtrl;
+  Windows, Math, Vcl.FileCtrl;
 
 const
  Genres: array[0..146] of string =
@@ -106,7 +105,7 @@ procedure TfrmMain.btnOpenClick(Sender: TObject);
 begin
   if dlgOpenDialog.Execute then
   begin
-    edtFileName.Text := dlgOpenDialog.FileName;
+    edtFileName.Text := LowerCase(dlgOpenDialog.FileName);
   end;
 end;
 
@@ -115,28 +114,6 @@ begin
   Start;
 
   ShowMessage('Done.');
-end;
-
-procedure TfrmMain.btnDestDirOpenClick(Sender: TObject);
-const
-  SELDIRHELP = 1000;
-var
-  dir: string;
-  selectResult: Boolean;
-begin
-  dir := edtDestDirName.Text;
-
-  try
-    selectResult := SelectDirectory(dir, [sdAllowCreate, sdPerformCreate, sdPrompt], SELDIRHELP);
-  except
-    dir := 'd:\radio';
-    selectResult := SelectDirectory(dir, [sdAllowCreate, sdPerformCreate, sdPrompt], SELDIRHELP);
-  end;
-
-  if selectResult then
-  begin
-    edtDestDirName.Text := dir;
-  end;
 end;
 
 procedure TfrmMain.CheckState;
@@ -151,6 +128,9 @@ end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
+  InitDestList(cbxDestList.Items);
+  cbxDestList.ItemIndex := cbxDestList.Items.Count - 1;
+
   CheckState;
 end;
 
@@ -162,7 +142,7 @@ begin
   fileExt := ExtractFileExt(FileName);
   destDirName := StringReplace(ExtractFileName(FileName), fileExt, '', []);
 
-  Result := Format('%s\%s', [Trim(edtDestDirName.Text), destDirName]);
+  Result := Format('%s\%s', [cbxDestList.Items[cbxDestList.ItemIndex], destDirName]);
 end;
 
 function TfrmMain.GetFileName: string;
@@ -204,11 +184,10 @@ begin
 
     if not System.SysUtils.DirectoryExists(newPath) then
     begin
-      if not ForceDirectories(newPath) then
+      if not System.SysUtils.ForceDirectories(newPath) then
       begin
-        edtDestDirName.Text := 'd:\radio';
         newPath := GetDestDirName();
-        ForceDirectories(newPath);
+        System.SysUtils.ForceDirectories(newPath);
       end;
     end;
 
@@ -233,6 +212,29 @@ begin
 
   finally
     FreeAndNil(src);
+  end;
+end;
+
+procedure TfrmMain.InitDestList(AList: TStrings);
+var
+  vDrivesSize: Cardinal;
+  vDrives: array[0..128] of Char;
+  vDrive: PChar;
+begin
+  AList.BeginUpdate;
+  try
+    AList.Clear;
+    vDrivesSize := GetLogicalDriveStrings(SizeOf(vDrives), vDrives);
+    if vDrivesSize=0 then Exit; // no drive found, no further processing needed
+
+    vDrive := vDrives;
+    while vDrive^ <> #0 do
+    begin
+      AList.Add(LowerCase(StrPas(vDrive) + 'radio'));
+      Inc(vDrive, SizeOf(vDrive));
+    end;
+  finally
+  	AList.EndUpdate;
   end;
 end;
 
